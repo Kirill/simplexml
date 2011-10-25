@@ -2642,14 +2642,20 @@ begin
   Set_Text(aValue)
 end;
 
+function GetVarVal(aValue: TXmlString): Variant;
+begin
+  if aValue = XSTR_NULL then Result := null
+  else Result := aValue
+end;
+
 procedure TXmlNode.SetAttr(const aName, aValue: TXmlString);
 begin
-	SetVarAttr(FNames.GetID(aName), aValue)
+  SetVarAttr(FNames.GetID(aName), GetVarVal(aValue))
 end;
 
 procedure TXmlNode.SetAttr(aNameID: Integer; const aValue: TXmlString);
 begin
-	SetVarAttr(aNameID, aValue)
+  SetVarAttr(aNameID, GetVarVal(aValue))
 end;
 
 procedure TXmlNode.SetBoolAttr(aNameID: Integer; aValue: Boolean);
