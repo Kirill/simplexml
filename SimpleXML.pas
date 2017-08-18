@@ -24,6 +24,13 @@ const
 	NODE_DOCUMENT_FRAGMENT = $0000000B;
 	NODE_NOTATION = $0000000C;
 
+{$if CompilerVersion < 20}
+type
+  UnicodeString = WideString;
+  RawByteString = AnsiString;
+  PByte = PAnsiChar;
+{$ifend}
+
 type
 	IXmlDocument = interface;
 	IXmlElement = interface;
@@ -397,7 +404,9 @@ type
 			const aData: String): IXmlProcessingInstruction; overload;
 
 		procedure LoadXML(const anXml: String); overload;
+    {$if CompilerVersion >= 20}
 		procedure LoadXML(const anXml: RawByteString); overload;
+    {$ifend}
 		procedure LoadBinaryXML(const anXml: RawByteString);
 
 		procedure Load(aStream: TStream); overload;
@@ -585,11 +594,13 @@ end;
 function XSTRToFloat(s: String): Double;
 var
 	aPos: Integer;
+  fmt : TFormatSettings;
 begin
-	if '.' = FormatSettings.DecimalSeparator then begin
+  GetLocaleFormatSettings(LOCALE_SYSTEM_DEFAULT, fmt);
+	if '.' = fmt.DecimalSeparator then begin
 		aPos := Pos(',', s)
   end
-	else if ',' = FormatSettings.DecimalSeparator then begin
+	else if ',' = fmt.DecimalSeparator then begin
 		aPos := Pos('.', s)
   end
 	else begin
@@ -600,7 +611,7 @@ begin
 	end;
 
 	if aPos <> 0 then begin
-		s[aPos] := FormatSettings.DecimalSeparator;
+		s[aPos] := fmt.DecimalSeparator;
   end;
 	Result := StrToFloat(s);
 end;
@@ -608,9 +619,11 @@ end;
 function FloatToXSTR(v: Double): String;
 var
 	aPos: Integer;
+  fmt : TFormatSettings;
 begin
 	Result := FloatToStr(v);
-	aPos := Pos(FormatSettings.DecimalSeparator, Result);
+  GetLocaleFormatSettings(LOCALE_SYSTEM_DEFAULT, fmt);
+	aPos := Pos(fmt.DecimalSeparator, Result);
 	if aPos <> 0 then begin
 		Result[aPos] := '.';
   end;
@@ -682,7 +695,9 @@ begin
 		varLongWord: Result := IntToStr(v.VLongWord);
 		varInt64: Result := IntToStr(v.VInt64);
 		varString: Result := String(AnsiString(v.VString));
+    {$if CompilerVersion >= 20}
 		varUString: Result := String(v.VString);
+    {$ifend}
 		varArray + varByte: begin
       p := VarArrayLock(Variant(v));
       try
@@ -1587,7 +1602,9 @@ type
 		function CreateProcessingInstruction(aTargetID: Integer;
 			const aData: String): IXmlProcessingInstruction; overload;
 		procedure LoadXML(const anXml: String); overload;
+    {$if CompilerVersion >= 20}
 		procedure LoadXML(const anXml: RawByteString); overload;
+    {$ifend}
 
 		procedure Load(aStream: TStream); overload;
 		procedure Load(const aFileName: String); overload;
@@ -3877,6 +3894,7 @@ begin
   end
 end;
 
+{$if CompilerVersion >= 20}
 procedure TXmlDocument.LoadXML(const anXml: RawByteString);
 var
 	aSource: TStringXmlSource;
@@ -3895,6 +3913,7 @@ begin
 		end
 	end
 end;
+{$ifend}
 
 function TXmlDocument.NewDocument(const aVersion, anEncoding,
 	aRootElementName: String): IXmlElement;
